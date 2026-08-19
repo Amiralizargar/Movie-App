@@ -105,3 +105,45 @@ export async function getMovieGenres(): Promise<GenreResponse> {
 
   return response.json();
 }
+
+export async function getTrendingMovies(
+  timeWindow: "day" | "week" = "day",
+  page = 1,
+): Promise<MovieResponse> {
+  const response = await fetch(
+    `${TMDB_BASE_URL}/trending/movie/${timeWindow}?page=${page}`,
+    {
+      headers,
+    },
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch trending movies");
+  }
+
+  return response.json();
+}
+
+export async function getTopRatedMovies(page = 1): Promise<MovieResponse> {
+  const response = await fetch(`${TMDB_BASE_URL}/movie/top_rated?page=${page}`, {
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch top rated movies");
+  }
+
+  return response.json();
+}
+
+export async function getUpcomingMovies(page = 1): Promise<MovieResponse> {
+  const response = await fetch(`${TMDB_BASE_URL}/movie/upcoming?page=${page}`, {
+    headers,
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch upcoming movies");
+  }
+
+  return response.json();
+}

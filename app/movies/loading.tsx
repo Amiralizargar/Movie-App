@@ -1,16 +1,16 @@
+import MoviesGridSkeleton from "../../Components/skeletons/MoviesGridSkeleton";
+
 export default function Loading() {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-slate-700 border-t-white" />
-
-            <p className="mt-4 text-slate-400">
-              Loading movies...
-            </p>
-          </div>
+    <main className="min-h-screen bg-ink px-4 pb-10 pt-24 text-paper sm:px-6 lg:px-10 xl:px-14">
+      <div className="mx-auto max-w-[1600px]">
+        <div className="mb-8 h-14 animate-pulse rounded-full bg-surface" />
+        <div className="mb-8 h-32 animate-pulse rounded-lg bg-surface" />
+        <div className="mb-8 space-y-2">
+          <div className="h-7 w-56 animate-pulse rounded bg-surface" />
+          <div className="h-3 w-28 animate-pulse rounded bg-surface" />
         </div>
+        <MoviesGridSkeleton />
       </div>
     </main>
   );
