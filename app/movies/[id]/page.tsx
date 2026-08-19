@@ -20,76 +20,73 @@ export default async function MovieDetailsPage({
   );
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-8 text-white">
-      <div className="mx-auto max-w-7xl">
-        <section className="relative overflow-hidden rounded-3xl border border-slate-800">
-          {/* Backdrop */}
-          {movie.backdrop_path && (
-            <Image
-              src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-              alt=""
-              fill
-              priority
-              className="object-cover"
-            />
-          )}
+    <main className="relative min-h-screen overflow-hidden text-white">
+      {/* ================================= */}
+      {/* FULL PAGE MOVIE BACKGROUND */}
+      {/* ================================= */}
 
-          {/* Dark overlay */}
-          <div className="absolute inset-0 bg-slate-950/60" />
+      {movie.poster_path && (
+        <div className="fixed inset-0 z-0">
+          <Image
+            src={`https://image.tmdb.org/t/p/original${movie.poster_path}`}
+            alt=""
+            fill
+            priority
+            className="object-cover"
+          />
+        </div>
+      )}
 
-          {/* Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-slate-950/30" />
+      {/* Dark overlay */}
+      <div className="fixed inset-0 z-10 bg-black/55" />
 
-          {/* Content */}
-          <div className="relative z-10 flex min-h-[520px] flex-col items-center gap-6 p-6 text-center md:flex-row md:items-center md:gap-8 md:p-10 md:text-left lg:gap-12 lg:p-14">
-            {/* Poster */}
-            <div className="w-48 shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-2xl md:w-64">
-              {movie.poster_path ? (
-                <Image
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  alt={movie.title}
-                  width={500}
-                  height={750}
-                  className="h-auto w-full object-cover"
-                />
-              ) : (
-                <div className="flex aspect-[2/3] items-center justify-center bg-slate-900 text-slate-500">
-                  No poster
-                </div>
-              )}
-            </div>
+      {/* Gradient for readable text */}
+      <div className="fixed inset-0 z-10 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
 
-            {/* Movie Information */}
+      {/* Bottom gradient */}
+      <div className="fixed inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+
+      {/* ================================= */}
+      {/* CONTENT */}
+      {/* ================================= */}
+
+      <div className="relative z-20 min-h-screen">
+        <div className="mx-auto flex min-h-screen max-w-7xl items-center px-6 py-24 md:px-10 lg:px-16">
+          <div className="flex w-full items-start justify-between gap-12">
+            {/* ================================= */}
+            {/* LEFT SIDE - MOVIE INFORMATION */}
+            {/* ================================= */}
+
             <div className="max-w-3xl">
               {/* Title */}
-              <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
+              <h1 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
                 {movie.title}
               </h1>
 
               {/* Metadata */}
-              <div className="mt-5 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-                <span className="rounded-full bg-yellow-400/10 px-3 py-1.5 text-sm font-semibold text-yellow-400">
+              <div className="mt-6 flex flex-wrap items-center gap-4">
+                <span className="rounded-full bg-yellow-400/15 px-4 py-2 font-semibold text-yellow-400 backdrop-blur">
                   ⭐ {movie.vote_average.toFixed(1)}
                 </span>
 
-                <span className="text-sm text-slate-300">
+                <span className="text-slate-200">
                   {movie.release_date || "Unknown"}
                 </span>
 
                 {movie.runtime && (
-                  <span className="text-sm text-slate-300">
-                    {movie.runtime} min
-                  </span>
+                  <span className="text-slate-200">{movie.runtime} min</span>
                 )}
+
+                <FavoriteButton movieId={movie.id} />
               </div>
 
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (
-                <div className="mt-5 flex flex-wrap justify-center gap-2 md:justify-start">
+                <div className="mt-6 flex flex-wrap gap-2">
                   {movie.genres.map((genre) => (
                     <span
                       key={genre.id}
-                      className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-sm text-slate-200"
+                      className="rounded-full border border-white/20 bg-black/30 px-4 py-1.5 text-sm text-white backdrop-blur"
                     >
                       {genre.name}
                     </span>
@@ -98,32 +95,46 @@ export default async function MovieDetailsPage({
               )}
 
               {/* Overview */}
-              <div className="mt-7">
-                <h2 className="text-lg font-semibold">Overview</h2>
+              <div className="mt-10">
+                <h2 className="text-xl font-semibold">Overview</h2>
 
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 md:text-base">
+                <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
                   {movie.overview || "No overview available."}
                 </p>
               </div>
 
               {/* Actions */}
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+              <div className="mt-8 flex flex-wrap items-center gap-4">
                 {trailer && (
                   <a
                     href={`https://www.youtube.com/watch?v=${trailer.key}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center rounded-lg bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 active:scale-95"
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-lg transition hover:bg-blue-500 active:scale-95"
                   >
                     ▶ Watch Trailer
                   </a>
                 )}
-
-                <FavoriteButton movieId={movie.id} />
               </div>
             </div>
+
+            {/* ================================= */}
+            {/* RIGHT SIDE - MOVIE POSTER */}
+            {/* ================================= */}
+
+            {movie.poster_path && (
+              <div className="hidden w-64 shrink-0 overflow-hidden rounded-2xl border border-white/20 shadow-2xl lg:block xl:w-72">
+                <Image
+                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                  alt={movie.title}
+                  width={500}
+                  height={750}
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+            )}
           </div>
-        </section>
+        </div>
       </div>
     </main>
   );
