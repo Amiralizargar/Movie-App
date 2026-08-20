@@ -116,7 +116,7 @@ export default function Home() {
 
               <p className="mt-3 leading-7 text-slate-400">
                 Search for movies by title and quickly find exactly what
-                you're looking for.
+                you're looking for.99
               </p>
             </div>
 
