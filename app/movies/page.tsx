@@ -1,7 +1,9 @@
-import MovieFilters from "@/Components/MovieFilters";
+import { SearchX } from "lucide-react";
+import MovieFilters from "../../Components/MovieFilters";
 import MovieCard from "../../Components/MovieCard";
 import Pagination from "../../Components/Pagination";
 import SearchBar from "../../Components/SearchBar";
+import EmptyState from "../../Components/EmptyState";
 
 import {
   getPopularMovies,
@@ -20,9 +22,7 @@ type MoviesPageProps = {
   }>;
 };
 
-export default async function Movies({
-  searchParams,
-}: MoviesPageProps) {
+export default async function Movies({ searchParams }: MoviesPageProps) {
   const params = await searchParams;
 
   // URL parameters
@@ -30,101 +30,83 @@ export default async function Movies({
 
   const page = Number(params.page ?? "1");
 
-  const rating = params.rating
-    ? Number(params.rating)
-    : undefined;
+  const rating = params.rating ? Number(params.rating) : undefined;
 
-  const year = params.year
-    ? Number(params.year)
-    : undefined;
+  const year = params.year ? Number(params.year) : undefined;
 
-  const genre = params.genre
-    ? Number(params.genre)
-    : undefined;
+  const genre = params.genre ? Number(params.genre) : undefined;
 
   // Get genres for the filter UI
   const genreData = await getMovieGenres();
 
   // Decide which API request to make
   const data =
-    rating !== undefined ||
-    year !== undefined ||
-    genre !== undefined
-      ? await discoverMovies({
-          page,
-          rating,
-          year,
-          genre,
-        })
+    rating !== undefined || year !== undefined || genre !== undefined
+      ? await discoverMovies({ page, rating, year, genre })
       : query
         ? await searchMovies(query, page)
         : await getPopularMovies(page);
 
-  return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-      <div className="mx-auto max-w-7xl">
+  const genreMap = Object.fromEntries(
+    genreData.genres.map((g) => [g.id, g.name]),
+  );
 
-        {/* Search */}
-        <div className="mb-10">
-          <SearchBar />
+  return (
+    <main className="min-h-screen bg-ink px-4 pb-10 pt-24 text-paper sm:px-6 lg:px-10 xl:px-14">
+      <div className="mx-auto max-w-[1600px]">
+        {/* Search + Filters toolbar */}
+        <div className="sticky top-16 z-30 mb-8 -mx-4 bg-ink/70 px-4 py-4 backdrop-blur-xl sm:mx-0 sm:rounded-2xl sm:px-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+            <SearchBar className="lg:max-w-sm" />
+            <MovieFilters genres={genreData.genres} />
+          </div>
         </div>
 
-        {/* Filters */}
-        <MovieFilters
-          genres={genreData.genres}
-        />
-
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-            {query
-              ? `Search results for "${query}"`
-              : "Popular Movies"}
-          </h1>
-
-          {query && (
-            <p className="mt-2 text-sm text-slate-400">
-              Showing movies matching your search
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {query ? `Results for "${query}"` : "Popular Movies"}
+            </h1>
+            <p className="mt-1.5 font-mono text-xs text-mist">
+              {data.total_results.toLocaleString()} movies found
             </p>
-          )}
+          </div>
         </div>
 
         {/* Empty State */}
         {data.results.length === 0 ? (
-          <div className="rounded-xl border border-slate-800 bg-slate-900 px-6 py-16 text-center">
-            <div className="text-5xl">🎬</div>
-
-            <h2 className="mt-5 text-2xl font-bold">
-              No movies found
-            </h2>
-
-            <p className="mt-2 text-slate-400">
-              Try changing your search or filters.
-            </p>
-          </div>
+          <EmptyState
+            icon={SearchX}
+            title="No movies found"
+            description="Try a different search term or adjust your filters to see more results."
+            actionHref="/movies"
+            actionLabel="Reset search"
+          />
         ) : (
           <>
             {/* Movie Grid */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:gap-7 lg:grid-cols-4">
-              {data.results.map((movie) => (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
+              {data.results.map((movie, index) => (
                 <MovieCard
                   key={movie.id}
                   movie={movie}
+                  genreMap={genreMap}
+                  priority={index < 5}
+                  sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 220px"
                 />
               ))}
             </div>
 
             {/* Pagination */}
-            <div className="mt-12">
-              <Pagination
-                currentPage={data.page}
-                totalPages={data.total_pages}
-                query={query}
-                rating={params.rating}
-                year={params.year}
-                genre={params.genre}
-              />
-            </div>
+            <Pagination
+              currentPage={data.page}
+              totalPages={Math.min(data.total_pages, 500)}
+              query={query}
+              rating={params.rating}
+              year={params.year}
+              genre={params.genre}
+            />
           </>
         )}
       </div>

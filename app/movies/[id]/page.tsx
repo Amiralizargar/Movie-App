@@ -1,6 +1,16 @@
 import Image from "next/image";
+import type { Metadata } from "next";
+import { Star, Clock, Calendar } from "lucide-react";
 import { getMovieDetails } from "../../../lib/api";
-import FavoriteButton from "@/Components/FavoriteButton";
+import FavoriteButton from "../../../Components/FavoriteButton";
+import TrailerButton from "../../../Components/TrailerButton";
+import {
+  backdropUrl,
+  posterUrl,
+  formatDate,
+  formatRating,
+  formatRuntime,
+} from "../../../lib/utils";
 
 type MovieDetailsPageProps = {
   params: Promise<{
@@ -8,9 +18,19 @@ type MovieDetailsPageProps = {
   }>;
 };
 
-export default async function MovieDetailsPage({
+export async function generateMetadata({
   params,
-}: MovieDetailsPageProps) {
+}: MovieDetailsPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const movie = await getMovieDetails(id);
+
+  return {
+    title: movie.title,
+    description: movie.overview || `Details, ratings, and trailer for ${movie.title}.`,
+  };
+}
+
+export default async function MovieDetailsPage({ params }: MovieDetailsPageProps) {
   const { id } = await params;
 
   const movie = await getMovieDetails(id);
@@ -19,122 +39,95 @@ export default async function MovieDetailsPage({
     (video) => video.site === "YouTube" && video.type === "Trailer",
   );
 
-  return (
-    <main className="relative min-h-screen overflow-hidden text-white">
-      {/* ================================= */}
-      {/* FULL PAGE MOVIE BACKGROUND */}
-      {/* ================================= */}
+  const backdrop = backdropUrl(movie.backdrop_path, "original");
+  const poster = posterUrl(movie.poster_path, "w500");
+  const releaseDate = formatDate(movie.release_date);
+  const runtime = formatRuntime(movie.runtime);
 
-      {movie.poster_path && (
+  return (
+    <main className="relative h-dvh overflow-hidden text-paper">
+      {/* Cinematic background */}
+      {backdrop ? (
         <div className="fixed inset-0 z-0">
-          <Image
-            src={`https://image.tmdb.org/t/p/original${movie.poster_path}`}
-            alt=""
-            fill
-            priority
-            className="object-cover"
-          />
+          <Image src={backdrop} alt="" fill priority className="object-cover" />
         </div>
+      ) : (
+        <div className="fixed inset-0 z-0 bg-ink-soft" />
       )}
 
-      {/* Dark overlay */}
-      <div className="fixed inset-0 z-10 bg-black/55" />
+      <div className="fixed inset-0 z-10 bg-ink/60" />
+      <div className="fixed inset-0 z-10 bg-gradient-to-r from-ink via-ink/70 to-ink/20" />
+      <div className="fixed inset-0 z-10 bg-gradient-to-t from-ink via-ink/10 to-transparent" />
 
-      {/* Gradient for readable text */}
-      <div className="fixed inset-0 z-10 bg-gradient-to-r from-black/90 via-black/60 to-black/20" />
+      <div className="relative z-20 mx-auto flex h-full max-w-[1600px] flex-col items-center justify-center gap-5 overflow-hidden px-4 py-4 sm:px-6 md:flex-row md:gap-10 lg:px-14">
+        {/* Info */}
+        <div className="w-full max-w-2xl md:order-1">
+          <h1 className="text-balance text-3xl font-extrabold leading-[1.05] tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            {movie.title}
+          </h1>
 
-      {/* Bottom gradient */}
-      <div className="fixed inset-0 z-10 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-xs sm:text-sm">
+            <span className="flex items-center gap-1.5 rounded-full bg-ember-dim px-2.5 py-1 font-semibold text-ember-bright">
+              <Star className="h-3.5 w-3.5 fill-ember-bright" strokeWidth={0} />
+              {formatRating(movie.vote_average)}
+            </span>
 
-      {/* ================================= */}
-      {/* CONTENT */}
-      {/* ================================= */}
-
-      <div className="relative z-20 min-h-screen">
-        <div className="mx-auto flex min-h-screen max-w-7xl items-center px-6 py-24 md:px-10 lg:px-16">
-          <div className="flex w-full items-start justify-between gap-12">
-            {/* ================================= */}
-            {/* LEFT SIDE - MOVIE INFORMATION */}
-            {/* ================================= */}
-
-            <div className="max-w-3xl">
-              {/* Title */}
-              <h1 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
-                {movie.title}
-              </h1>
-
-              {/* Metadata */}
-              <div className="mt-6 flex flex-wrap items-center gap-4">
-                <span className="rounded-full bg-yellow-400/15 px-4 py-2 font-semibold text-yellow-400 backdrop-blur">
-                  ⭐ {movie.vote_average.toFixed(1)}
-                </span>
-
-                <span className="text-slate-200">
-                  {movie.release_date || "Unknown"}
-                </span>
-
-                {movie.runtime && (
-                  <span className="text-slate-200">{movie.runtime} min</span>
-                )}
-
-                <FavoriteButton movieId={movie.id} />
-              </div>
-
-              {/* Genres */}
-              {movie.genres && movie.genres.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {movie.genres.map((genre) => (
-                    <span
-                      key={genre.id}
-                      className="rounded-full border border-white/20 bg-black/30 px-4 py-1.5 text-sm text-white backdrop-blur"
-                    >
-                      {genre.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Overview */}
-              <div className="mt-10">
-                <h2 className="text-xl font-semibold">Overview</h2>
-
-                <p className="mt-4 max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
-                  {movie.overview || "No overview available."}
-                </p>
-              </div>
-
-              {/* Actions */}
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                {trailer && (
-                  <a
-                    href={`https://www.youtube.com/watch?v=${trailer.key}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-6 py-3.5 font-semibold text-white shadow-lg transition hover:bg-blue-500 active:scale-95"
-                  >
-                    ▶ Watch Trailer
-                  </a>
-                )}
-              </div>
-            </div>
-
-            {/* ================================= */}
-            {/* RIGHT SIDE - MOVIE POSTER */}
-            {/* ================================= */}
-
-            {movie.poster_path && (
-              <div className="hidden w-64 shrink-0 overflow-hidden rounded-2xl border border-white/20 shadow-2xl lg:block xl:w-72">
-                <Image
-                  src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  alt={movie.title}
-                  width={500}
-                  height={750}
-                  className="h-auto w-full object-cover"
-                />
-              </div>
+            {releaseDate && (
+              <span className="flex items-center gap-1.5 text-mist">
+                <Calendar className="h-3.5 w-3.5" strokeWidth={1.75} />
+                {releaseDate}
+              </span>
             )}
+
+            {runtime && (
+              <span className="flex items-center gap-1.5 text-mist">
+                <Clock className="h-3.5 w-3.5" strokeWidth={1.75} />
+                {runtime}
+              </span>
+            )}
+
+            <FavoriteButton movieId={movie.id} />
+          </div>
+
+          {movie.genres && movie.genres.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {movie.genres.slice(0, 4).map((genre) => (
+                <span
+                  key={genre.id}
+                  className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-medium text-paper backdrop-blur-xl"
+                >
+                  {genre.name}
+                </span>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-4">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-mist">
+              Overview
+            </h2>
+            <p className="mt-2 line-clamp-2 max-w-xl text-sm leading-6 text-paper/90 sm:line-clamp-3 sm:text-base sm:leading-7">
+              {movie.overview || "No overview available."}
+            </p>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-4">
+            {trailer && <TrailerButton trailerKey={trailer.key} title={movie.title} />}
           </div>
         </div>
+
+        {/* Poster */}
+        {poster && (
+          <div className="w-24 shrink-0 overflow-hidden rounded-lg border border-hairline-strong shadow-2xl shadow-black/60 sm:w-36 md:order-2 md:w-48 lg:w-56 xl:w-64">
+            <Image
+              src={poster}
+              alt={movie.title}
+              width={500}
+              height={750}
+              className="h-auto w-full object-cover"
+            />
+          </div>
+        )}
       </div>
     </main>
   );

@@ -1,5 +1,7 @@
 "use client";
 
+import { Film } from "lucide-react";
+
 export default function Error({
   reset,
 }: {
@@ -7,22 +9,22 @@ export default function Error({
   reset: () => void;
 }) {
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
+    <main className="min-h-screen bg-ink px-4 pb-10 pt-16 text-paper">
       <div className="mx-auto flex min-h-[500px] max-w-7xl items-center justify-center">
         <div className="text-center">
-          <div className="text-5xl">🎬</div>
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-hairline bg-surface text-ember">
+            <Film className="h-6 w-6" strokeWidth={1.5} />
+          </div>
 
-          <h1 className="mt-5 text-3xl font-bold">
-            Movie couldn't be loaded
-          </h1>
+          <h1 className="mt-6 text-3xl font-bold">Movie couldn&apos;t be loaded</h1>
 
-          <p className="mt-3 text-slate-400">
-            We couldn't load this movie. Please try again.
+          <p className="mt-3 max-w-sm text-sm leading-6 text-mist">
+            We couldn&apos;t load this movie. Please try again.
           </p>
 
           <button
             onClick={() => reset()}
-            className="mt-6 rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-500"
+            className="mt-7 rounded-full bg-ember px-6 py-3 text-sm font-semibold text-ink transition hover:bg-ember-bright active:scale-95"
           >
             Try again
           </button>

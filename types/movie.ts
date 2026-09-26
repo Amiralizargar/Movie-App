@@ -23,6 +23,9 @@ export type Movie = {
 
   vote_average: number;
 
+  // Present on list/search/discover/trending responses
+  genre_ids?: number[];
+
   // These fields are mainly available
   // when requesting movie details
   runtime?: number | null;

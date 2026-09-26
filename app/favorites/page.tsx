@@ -1,90 +1,88 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Heart } from "lucide-react";
 import MovieCard from "../../Components/MovieCard";
+import EmptyState from "../../Components/EmptyState";
+import MoviesGridSkeleton from "../../Components/skeletons/MoviesGridSkeleton";
+import { useFavorites } from "../../hooks/useFavorites";
 import type { Movie } from "../../types/movie";
 
 export default function FavoritesPage() {
+  const { ids, hydrated } = useFavorites();
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [fetching, setFetching] = useState(false);
 
   useEffect(() => {
+    if (!hydrated || ids.length === 0) return;
+
+    let cancelled = false;
+
     async function loadFavorites() {
-      const storedFavorites =
-        localStorage.getItem("favorites");
+      setFetching(true);
 
-      if (!storedFavorites) {
-        setLoading(false);
-        return;
+      try {
+        const response = await fetch("/api/favorites", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to load favorites");
+        }
+
+        const data: Movie[] = await response.json();
+        if (!cancelled) setMovies(data);
+      } finally {
+        if (!cancelled) setFetching(false);
       }
-
-      const favoriteIds: number[] =
-        JSON.parse(storedFavorites);
-
-      const response = await fetch("/api/favorites", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ids: favoriteIds,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to load favorites");
-      }
-
-      const movies: Movie[] = await response.json();
-
-      setMovies(movies);
-      setLoading(false);
     }
 
     loadFavorites();
-  }, []);
 
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-        <div className="mx-auto max-w-7xl">
-          <p className="text-slate-400">
-            Loading favorites...
-          </p>
-        </div>
-      </main>
-    );
-  }
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, ids]);
+
+  const displayMovies = ids.length === 0 ? [] : movies;
+  const loading = !hydrated || (ids.length > 0 && fetching && displayMovies.length === 0);
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-10 text-white">
-      <div className="mx-auto max-w-7xl">
-
-        <h1 className="mb-8 text-3xl font-bold">
-          My Favorites ❤️
-        </h1>
-
-        {movies.length === 0 ? (
-          <div className="py-16 text-center">
-            <h2 className="text-2xl font-bold">
-              No favorites yet
-            </h2>
-
-            <p className="mt-2 text-slate-400">
-              Add some movies to your favorites.
-            </p>
+    <main className="min-h-screen bg-ink px-4 pb-10 pt-24 text-paper sm:px-6 lg:px-10 xl:px-14">
+      <div className="mx-auto max-w-[1600px]">
+        <div className="mb-8">
+          <div className="flex items-center gap-2.5">
+            <Heart className="h-6 w-6 fill-ember text-ember" strokeWidth={0} />
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              Your Favorites
+            </h1>
           </div>
+          <p className="mt-1.5 font-mono text-xs text-mist">
+            {loading
+              ? "Loading…"
+              : `${displayMovies.length} saved ${displayMovies.length === 1 ? "movie" : "movies"}`}
+          </p>
+        </div>
+
+        {loading ? (
+          <MoviesGridSkeleton count={10} />
+        ) : displayMovies.length === 0 ? (
+          <EmptyState
+            icon={Heart}
+            title="No favorites yet"
+            description="Movies you save will show up here. Start exploring to build your personal library."
+            actionHref="/movies"
+            actionLabel="Explore Movies"
+          />
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {movies.map((movie) => (
-              <MovieCard
-                key={movie.id}
-                movie={movie}
-              />
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:gap-6 lg:grid-cols-4 xl:grid-cols-5">
+            {displayMovies.map((movie) => (
+              <MovieCard key={movie.id} movie={movie} />
             ))}
           </div>
         )}
-
       </div>
     </main>
   );

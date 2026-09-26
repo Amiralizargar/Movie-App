@@ -1,2 +1,84 @@
 @import "tailwindcss";
 
+@theme {
+  /* ---- Cinematic palette ---- */
+  --color-ink: #08090c;
+  --color-ink-soft: #0d0f14;
+  --color-surface: #131519;
+  --color-surface-hover: #1a1c22;
+  --color-hairline: rgba(255, 255, 255, 0.08);
+  --color-hairline-strong: rgba(255, 255, 255, 0.16);
+
+  --color-paper: #f4f4f2;
+  --color-mist: #9a9ba3;
+  --color-mist-dim: #6b6c74;
+
+  --color-ember: #d4af37;
+  --color-ember-bright: #e8c667;
+  --color-ember-dim: rgba(212, 175, 55, 0.16);
+
+  /* ---- Typography ---- */
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* ---- Motion ---- */
+  --ease-cinematic: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-hairline);
+  }
+
+  html {
+    background-color: var(--color-ink);
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    background-image:
+      radial-gradient(ellipse 70% 45% at 18% 0%, rgba(212, 175, 55, 0.09), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 100% 15%, rgba(255, 255, 255, 0.045), transparent 60%),
+      radial-gradient(ellipse 80% 50% at 50% 100%, rgba(212, 175, 55, 0.05), transparent 65%);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    color: var(--color-paper);
+  }
+
+  ::selection {
+    background-color: var(--color-ember-dim);
+    color: var(--color-ember-bright);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .mask-edge-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 24px,
+      black calc(100% - 24px),
+      transparent
+    );
+  }
+}
